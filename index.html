@@ -88,7 +88,7 @@
               <div class="d-flex" >
                 <button class="btn btn-${todo.completed == '1' ? 'success' : 'warning'} me-1">${todo.completed == '1' ? '<i class="bi bi-check"></i>' : '<i class="bi bi-x"></i>'}</button>
                 <button class='btn btn-primary me-1' data-bs-toggle="modal" data-bs-target="#editTodo" onclick='selectTodo(${JSON.stringify(todo)})'><i class="bi bi-pencil"></i></button>
-                <button class='btn btn-danger'><i class="bi bi-trash"></i></button>
+                <button class='btn btn-danger'><i class="bi bi-trash" onclick='deleteTodo(${todo.id})'></i></button>
               </div>  
             </div>`
           ))
@@ -153,6 +153,22 @@
             document.getElementById('closeModal').click()
           })
           .catch((err) => {debugger})
+      }
+
+      function deleteTodo(id) {
+        console.log(id)
+         fetch(`https://api.kelasprogramming.com/todo/${id}`, {
+          method: 'DELETE',
+          headers: {
+            "Content-type": "application/json",
+            "Authorization": `Bearer ${JWTtoken}`
+          }
+          })
+          .then(response => response.json())
+          .then(body =>  {
+            fetchAllTodos()
+          })
+          .catch(err => {debugger})
       }
   
 
