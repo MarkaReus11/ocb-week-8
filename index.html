@@ -29,38 +29,15 @@
           <h1 class="h3 mb-3 fw-normal">Todo List</h1>
       
           <div class="form-floating pb-2">
-            <input type="text" class="form-control" id="todo" placeholder="to do list">
+            <input type="text" class="form-control" id="todoInput" placeholder="to do list">
             <label for="todo">New Todo</label>
           </div>
       
-          <button class="btn btn-primary w-100 py-2" type="submit">Add</button>
+          <button class="btn btn-primary w-100 py-2" type="submit" onclick="onSubmit()">Add</button>
         </form>
 
-        <div class="m-3">
-          <div class="pt-1 d-flex justify-content-between">
-            Belajar HTML
-            <div class="d-flex" >
-              <button class="btn btn-success me-1"><i class="bi bi-check"></i></button>
-              <button class='btn btn-primary me-1' data-bs-toggle="modal" data-bs-target="#editTodo" ><i class="bi bi-pencil"></i></button>
-              <button class='btn btn-danger'><i class="bi bi-trash"></i></button>
-            </div>
-          </div>
-          <div class="pt-1 d-flex justify-content-between">
-            Belajar CSS
-            <div class="d-flex" >
-              <button class="btn btn-success me-1"><i class="bi bi-check"></i></button>
-              <button class='btn btn-primary me-1' data-bs-toggle="modal" data-bs-target="#editTodo" ><i class="bi bi-pencil"></i></button>
-              <button class='btn btn-danger'><i class="bi bi-trash"></i></button>
-            </div>
-          </div>
-          <div class="pt-1 d-flex justify-content-between">
-            Belajar JavaScript
-            <div class="d-flex" >
-              <button class="btn btn-warning me-1"><i class="bi bi-x"></i></button>
-              <button class='btn btn-primary me-1' data-bs-toggle="modal" data-bs-target="#editTodo" ><i class="bi bi-pencil"></i></button>
-              <button class='btn btn-danger'><i class="bi bi-trash"></i></button>
-            </div>  
-          </div>
+        <div class="m-3" id="todoList">
+          
         </div>
 
       </div>
@@ -76,14 +53,14 @@
           </div>
           <div class="modal-body">
             <div class="form-floating pb-2">
-              <input type="text" class="form-control" id="todo" placeholder="to do list">
+              <input type="text" class="form-control" id="todoUpdate" placeholder="to do list">
               <label for="todo">Edit Todo</label>
             </div>
-            <button type="button" class="btn btn-success">Mark as completed</button>
+            <div type="button" class="btn btn-success">Mark as completed</div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
+            <div type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</div>
+            <div type="button" class="btn btn-primary">Save changes</div>
           </div>
         </div>
       </div>
@@ -93,5 +70,65 @@
       2024
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script>
+      const JWTtoken = localStorage.getItem('todoJWTtoken')
+
+      function fetchAllTodos(){
+        fetch("https://api.kelasprogramming.com/todo", {
+          headers: {
+            "Authorization": `Bearer ${JWTtoken}`
+          }
+        })
+        .then((response) => response.json())
+        .then((body) => {
+          //kita akan convert list kepada list of html elements
+          const todoList = body.entry.map((todo) => (
+            `<div class="pt-1 d-flex justify-content-between">
+              ${todo.details}
+              <div class="d-flex" >
+                <button class="btn btn-${todo.completed == '1' ? 'success' : 'warning'} me-1">${todo.completed == '1' ? '<i class="bi bi-check"></i>' : '<i class="bi bi-x"></i>'}</button>
+                <button class='btn btn-primary me-1' data-bs-toggle="modal" data-bs-target="#editTodo" ><i class="bi bi-pencil"></i></button>
+                <button class='btn btn-danger'><i class="bi bi-trash"></i></button>
+              </div>  
+            </div>`
+          ))
+
+          //render list of html elements kepada innerHTML dekat dalam #todoList
+          document.getElementById('todoList').innerHTML = todoList.join('')
+        })
+        .catch((err) => {debugger})
+      }
+      
+      // *Create* kena list to onclick event dekat button 'add'
+      // onclick button
+      // 1) dapatkan value dari input
+      function onSubmit() {
+        const inputValue = document.getElementById('todoInput').value
+        console.log('value' + inputValue ) 
+      // 2) buat post request untuk create
+        fetch('https://api.kelasprogramming.com/todo', {
+            method: 'POST',
+            headers: {
+              "Content-type": "application/json",
+              "Authorization": `Bearer ${JWTtoken}`
+            },
+            body: JSON.stringify({
+              "details": inputValue
+            })
+          })
+          .then((response) => response.json())
+          .then((body) => {
+            fetchAllTodos()
+            document.getElementById('todoInput').value = ''
+          })
+          .catch((err) => {debugger})
+      }
+  
+      // 3) onsuccess,
+      // 3.1) refresh all todo items
+      // 3.2) clearkan input field
+      fetchAllTodos()
+      // 4) on fail, kita alertkan
+    </script>
   </body>
 </html>
