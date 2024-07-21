@@ -33,7 +33,7 @@
             <label for="todo">New Todo</label>
           </div>
       
-          <button class="btn btn-primary w-100 py-2" type="submit" onclick="onSubmit()">Add</button>
+          <div class="btn btn-primary w-100 py-2" onclick="onSubmit()">Add</div>
         </form>
 
         <div class="m-3" id="todoList">
@@ -56,11 +56,11 @@
               <input type="text" class="form-control" id="todoUpdate" placeholder="to do list">
               <label for="todo">Edit Todo</label>
             </div>
-            <div type="button" class="btn btn-success">Mark as completed</div>
+            <div class="btn btn-success">Mark as completed</div>
           </div>
           <div class="modal-footer">
-            <div type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</div>
-            <div type="button" class="btn btn-primary">Save changes</div>
+            <div type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="closeModal">Close</div>
+            <div class="btn btn-primary" onclick="onSaveChanges()">Save changes</div>
           </div>
         </div>
       </div>
@@ -87,7 +87,7 @@
               ${todo.details}
               <div class="d-flex" >
                 <button class="btn btn-${todo.completed == '1' ? 'success' : 'warning'} me-1">${todo.completed == '1' ? '<i class="bi bi-check"></i>' : '<i class="bi bi-x"></i>'}</button>
-                <button class='btn btn-primary me-1' data-bs-toggle="modal" data-bs-target="#editTodo" ><i class="bi bi-pencil"></i></button>
+                <button class='btn btn-primary me-1' data-bs-toggle="modal" data-bs-target="#editTodo" onclick='selectTodo(${JSON.stringify(todo)})'><i class="bi bi-pencil"></i></button>
                 <button class='btn btn-danger'><i class="bi bi-trash"></i></button>
               </div>  
             </div>`
@@ -104,8 +104,10 @@
       // 1) dapatkan value dari input
       function onSubmit() {
         const inputValue = document.getElementById('todoInput').value
-        console.log('value' + inputValue ) 
       // 2) buat post request untuk create
+      // 3) onsuccess,
+      // 3.1) refresh all todo items
+      // 3.2) clearkan input field
         fetch('https://api.kelasprogramming.com/todo', {
             method: 'POST',
             headers: {
@@ -123,10 +125,37 @@
           })
           .catch((err) => {debugger})
       }
+
+      let selectedTodo = '' 
+
+      function selectTodo(todo){
+        console.log(todo)
+        selectedTodo = todo
+      }
+
+      function onSaveChanges(){
+        const inputValue = document.getElementById('todoUpdate').value
+        fetch(`https://api.kelasprogramming.com/todo/${selectedTodo.id}`, {
+            method: 'PUT',
+            headers: {
+              "Content-type": "application/json",
+              "Authorization": `Bearer ${JWTtoken}`
+            },
+            body: JSON.stringify({
+              "details": inputValue,
+              "completed": 1
+            })
+          })
+          .then((response) => response.json())
+          .then((body) => {
+            fetchAllTodos()
+            document.getElementById('todoUpdate').value = ''
+            document.getElementById('closeModal').click()
+          })
+          .catch((err) => {debugger})
+      }
   
-      // 3) onsuccess,
-      // 3.1) refresh all todo items
-      // 3.2) clearkan input field
+
       fetchAllTodos()
       // 4) on fail, kita alertkan
     </script>
