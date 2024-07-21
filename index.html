@@ -13,9 +13,9 @@
       <nav class="navbar bg-body-tertiary">
         <div class="container">
           <a class="navbar-brand" href="./index.html">Todo List</a>
-          <div class="d-flex" >
-            <a class="navbar-brand" href="./sign-in.html">Login</a>
-            <a class="navbar-brand" href="./register.html">Register</a>
+          <div class="d-flex" id="navBar">
+              <!-- //bila ada JWT token, keluar logout
+              //kalau xada, keluar login dan register -->
           </div>
         </div>
       </nav>
@@ -176,10 +176,30 @@
           })
           .catch(err => {debugger})
       }
-  
 
-      fetchAllTodos()
-      // 4) on fail, kita alertkan
+      function logout() {
+        localStorage.removeItem('todoJWTtoken')
+        localStorage.removeItem('todoRefreshToken')
+        location.reload()
+        window.location.href = "./sign-in.html"
+      }
+
+      function checkAuth() {
+        if (JWTtoken) {
+          navBar.innerHTML = `<a class="navbar-brand" href="#" onclick="logout()">Logout</a>`
+        } else {
+          navBar.innerHTML = `
+            <a class="navbar-brand" href="./sign-in.html">Login</a>
+            <a class="navbar-brand" href="./register.html">Register</a>`
+        }
+      }
+  
+      document.addEventListener('DOMContentLoaded', () => {
+        checkAuth();
+        if (JWTtoken) {
+          fetchAllTodos();
+        }
+      });
     </script>
   </body>
 </html>
